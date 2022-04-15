@@ -448,6 +448,7 @@
 
 - (void)deviceService:(DeviceService *)service pairingRequiredOfType:(DeviceServicePairingType)pairingType withData:(id)pairingData
 {
+    NSLog(@"_connectable pairing required");
     if (self.delegate)
     {
         if ([self.delegate respondsToSelector:@selector(connectableDevice:service:pairingRequiredOfType:withData:)])
