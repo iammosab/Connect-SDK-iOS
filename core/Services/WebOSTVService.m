@@ -26,7 +26,7 @@
 #import "WebOSTVServiceSocketClient.h"
 #import "CTGuid.h"
 #import "CommonMacros.h"
-#import "NSMutableDictionary+NilSafe.h"
+
 #import "NSObject+FeatureNotSupported_Private.h"
 
 #define kKeyboardEnter @"\x1b ENTER \x1b"
@@ -1167,15 +1167,7 @@
 
     command.callbackComplete = (^(NSDictionary *responseDic)
     {
-        int fromString = 0;
-        if ([responseDic objectForKey:@"volume"])
-        {
-            fromString = [[responseDic objectForKey:@"volume"] intValue];
-        }
-        else
-        {
-            fromString = [[[responseDic objectForKey:@"volumeStatus"] objectForKey:@"volume"] intValue];
-        }
+        int fromString = [[responseDic objectForKey:@"volume"] intValue];
         float volVal = fromString / 100.0;
 
         if (success)
@@ -1239,15 +1231,7 @@
 
     ServiceSubscription *subscription = [self.socket addSubscribe:URL payload:nil success:^(NSDictionary *responseObject)
     {
-        float volumeValue = 0;
-        if ([responseObject valueForKey:@"volume"])
-        {
-            volumeValue = [[responseObject valueForKey:@"volume"] floatValue] / 100.0;
-        }
-        else
-        {
-            volumeValue = [[[responseObject valueForKey:@"volumeStatus"] valueForKey:@"volume"] floatValue] / 100.0;
-        }
+        float volumeValue = [[responseObject valueForKey:@"volume"] floatValue] / 100.0;
 
         if (success)
             success(volumeValue);
@@ -1343,23 +1327,9 @@
 
 - (void)setChannel:(ChannelInfo *)channelInfo success:(SuccessBlock)success failure:(FailureBlock)failure
 {
-    if (!channelInfo)
-    {
-        if (failure)
-            failure([ConnectError generateErrorWithCode:ConnectStatusCodeArgumentError andDetails:@"channelInfo cannot be empty"]);
-        return;
-    }
     NSURL *URL = [NSURL URLWithString:@"ssap://tv/openChannel"];
+    NSDictionary *payload = @{ @"channelId" : channelInfo.id};
 
-    NSMutableDictionary *payload = [NSMutableDictionary dictionary];
-    if(channelInfo.id){
-        [payload setNullableObject:channelInfo.id forKey:@"channelId"];
-    }
-    
-    if(channelInfo.number){
-        [payload setNullableObject:channelInfo.number forKey:@"channelNumber"];
-    }
-    
     ServiceCommand *command = [ServiceAsyncCommand commandWithDelegate:self.socket target:URL payload:payload];
     command.callbackComplete = success;
     command.callbackError = failure;
@@ -1753,20 +1723,45 @@
 
     WebOSWebAppSession *webAppSession = _webAppSessions[launchSession.appId];
 
-    if (webAppSession){
-        [webAppSession disconnectFromWebApp];
+    if (webAppSession && webAppSession.connected)
+    {
+        // This is a hack to enable closing of bridged web apps that we didn't open
+        NSDictionary *closeCommand = @{
+                @"contentType" : @"connectsdk.serviceCommand",
+                @"serviceCommand" : @{
+                        @"type" : @"close"
+                }
+        };
+
+        [webAppSession sendJSON:closeCommand success:^(id responseObject)
+        {
+            [webAppSession disconnectFromWebApp];
+
+            if (success)
+                success(responseObject);
+        } failure:^(NSError *closeError)
+        {
+            [webAppSession disconnectFromWebApp];
+
+            if (failure)
+                failure(closeError);
+        }];
+    } else
+    {
+        if (webAppSession)
+            [webAppSession disconnectFromWebApp];
+
+        NSURL *URL = [NSURL URLWithString:@"ssap://webapp/closeWebApp"];
+
+        NSMutableDictionary *payload = [NSMutableDictionary new];
+        if (launchSession.appId) [payload setValue:launchSession.appId forKey:@"webAppId"];
+        if (launchSession.sessionId) [payload setValue:launchSession.sessionId forKey:@"sessionId"];
+
+        ServiceCommand *command = [ServiceAsyncCommand commandWithDelegate:self.socket target:URL payload:payload];
+        command.callbackComplete = success;
+        command.callbackError = failure;
+        [command send];
     }
-    
-    NSURL *URL = [NSURL URLWithString:@"ssap://webapp/closeWebApp"];
-    
-    NSMutableDictionary *payload = [NSMutableDictionary new];
-    if (launchSession.appId) [payload setValue:launchSession.appId forKey:@"webAppId"];
-    if (launchSession.sessionId) [payload setValue:launchSession.sessionId forKey:@"sessionId"];
-    
-    ServiceCommand *command = [ServiceAsyncCommand commandWithDelegate:self.socket target:URL payload:payload];
-    command.callbackComplete = success;
-    command.callbackError = failure;
-    [command send];
 }
 
 - (void)joinWebApp:(LaunchSession *)webAppLaunchSession success:(WebAppLaunchSuccessBlock)success failure:(FailureBlock)failure

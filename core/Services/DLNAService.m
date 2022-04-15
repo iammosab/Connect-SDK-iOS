@@ -308,6 +308,8 @@ static const NSInteger kValueNotFound = -1;
     [request addValue:actionField forHTTPHeaderField:kActionFieldName];
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:xmlData];
+    
+    NSLog(@"sendCommand: xmlData: %@",xml);
 
     DLog(@"[OUT] : %@ \n %@", [request allHTTPHeaderFields], xml);
 

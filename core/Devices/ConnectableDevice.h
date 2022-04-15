@@ -75,6 +75,9 @@
 /*! An estimate of the ConnectableDevice's current model name. */
 @property (nonatomic, readonly) NSString *modelName;
 
+/*! An estimate of the ConnectableDevice's current model name. */
+@property (nonatomic, readonly) NSString *manufacturer;
+
 /*! An estimate of the ConnectableDevice's current model number. */
 @property (nonatomic, readonly) NSString *modelNumber;
 

@@ -92,6 +92,7 @@
 
     if (self.id) jsonObject[@"id"] = self.id;
     if (self.friendlyName) jsonObject[@"friendlyName"] = self.friendlyName;
+    if (self.manufacturer) jsonObject[@"manufacturer"] = self.manufacturer;
     if (self.lastKnownIPAddress) jsonObject[@"lastKnownIPAddress"] = self.lastKnownIPAddress;
     if (self.lastSeenOnWifi) jsonObject[@"lastSeenOnWifi"] = self.lastSeenOnWifi;
     if (self.lastConnected) jsonObject[@"lastConnected"] = @(self.lastConnected);
@@ -147,6 +148,11 @@
 - (NSString *) friendlyName
 {
     return _consolidatedServiceDescription.friendlyName;
+}
+
+- (NSString *) manufacturer
+{
+    return _consolidatedServiceDescription.manufacturer;
 }
 
 - (NSString *) modelName
@@ -370,6 +376,9 @@
 
     if (serviceDescription.friendlyName)
         _consolidatedServiceDescription.friendlyName = serviceDescription.friendlyName;
+    
+    if (serviceDescription.manufacturer)
+        _consolidatedServiceDescription.manufacturer = serviceDescription.manufacturer;
 
     if (serviceDescription.modelName)
         _consolidatedServiceDescription.modelName = serviceDescription.modelName;
@@ -448,7 +457,6 @@
 
 - (void)deviceService:(DeviceService *)service pairingRequiredOfType:(DeviceServicePairingType)pairingType withData:(id)pairingData
 {
-    NSLog(@"_connectable pairing required");
     if (self.delegate)
     {
         if ([self.delegate respondsToSelector:@selector(connectableDevice:service:pairingRequiredOfType:withData:)])
