@@ -74,7 +74,16 @@
 
     NSString *pickerTitle = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Search_Title" value:@"Pick a device" table:@"ConnectSDK"];
 
-    _tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
+    // _tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
+
+    UIStoryboard *sb = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    
+    @try {
+        _tableViewController = [sb instantiateViewControllerWithIdentifier:@"devicepicker"];
+    } @catch (NSException *exception) {
+        _tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    }
+
     _tableViewController.title = pickerTitle;
     _tableViewController.tableView.delegate = self;
     _tableViewController.tableView.dataSource = self;
