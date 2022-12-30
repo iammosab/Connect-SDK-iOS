@@ -37,6 +37,8 @@
 #import "KeyControl.h"
 #import "MouseControl.h"
 #import "PowerControl.h"
+#import "ScreenMirroringControl.h"
+#import "RemoteCameraControl.h"
 
 /*!
  * ###Overview
@@ -74,9 +76,6 @@
 
 /*! An estimate of the ConnectableDevice's current model name. */
 @property (nonatomic, readonly) NSString *modelName;
-
-/*! An estimate of the ConnectableDevice's current model name. */
-@property (nonatomic, readonly) NSString *manufacturer;
 
 /*! An estimate of the ConnectableDevice's current model number. */
 @property (nonatomic, readonly) NSString *modelNumber;
@@ -206,5 +205,7 @@
 - (id<PowerControl>)powerControl; /*! Accessor for highest priority PowerControl object */
 - (id<ToastControl>) toastControl; /*! Accessor for highest priority ToastControl object */
 - (id<WebAppLauncher>) webAppLauncher; /*! Accessor for highest priority WebAppLauncher object */
+- (id<ScreenMirroringControl>)screenMirroringControl; /*! Accessor for highest priority ScreenMirroring object */
+- (id<RemoteCameraControl>)remoteCameraControl; /*! Accessor for highest priority RemoteCamera object */
 
 @end

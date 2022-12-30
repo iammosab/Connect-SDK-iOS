@@ -92,7 +92,6 @@
 
     if (self.id) jsonObject[@"id"] = self.id;
     if (self.friendlyName) jsonObject[@"friendlyName"] = self.friendlyName;
-    if (self.manufacturer) jsonObject[@"manufacturer"] = self.manufacturer;
     if (self.lastKnownIPAddress) jsonObject[@"lastKnownIPAddress"] = self.lastKnownIPAddress;
     if (self.lastSeenOnWifi) jsonObject[@"lastSeenOnWifi"] = self.lastSeenOnWifi;
     if (self.lastConnected) jsonObject[@"lastConnected"] = @(self.lastConnected);
@@ -148,11 +147,6 @@
 - (NSString *) friendlyName
 {
     return _consolidatedServiceDescription.friendlyName;
-}
-
-- (NSString *) manufacturer
-{
-    return _consolidatedServiceDescription.manufacturer;
 }
 
 - (NSString *) modelName
@@ -376,9 +370,6 @@
 
     if (serviceDescription.friendlyName)
         _consolidatedServiceDescription.friendlyName = serviceDescription.friendlyName;
-    
-    if (serviceDescription.manufacturer)
-        _consolidatedServiceDescription.manufacturer = serviceDescription.manufacturer;
 
     if (serviceDescription.modelName)
         _consolidatedServiceDescription.modelName = serviceDescription.modelName;
@@ -903,6 +894,64 @@
     }];
 
     return foundWebAppLauncher;
+}
+
+- (id<ScreenMirroringControl>)screenMirroringControl
+{
+    __block id<ScreenMirroringControl> foundScreenMirroring;
+
+    [_services enumerateKeysAndObjectsUsingBlock:^(id key, id service, BOOL *stop)
+    {
+        if (![service respondsToSelector:@selector(screenMirroringControl)])
+            return;
+
+        id<ScreenMirroringControl> screenMirroring = [service screenMirroringControl];
+
+        if (screenMirroring)
+        {
+            if (foundScreenMirroring)
+            {
+                if (screenMirroring.screenMirroringControlPriority > foundScreenMirroring.screenMirroringControlPriority)
+                {
+                    foundScreenMirroring = screenMirroring;
+                }
+            } else
+            {
+                foundScreenMirroring = screenMirroring;
+            }
+        }
+    }];
+
+    return foundScreenMirroring;
+}
+
+- (id<RemoteCameraControl>)remoteCameraControl
+{
+    __block id<RemoteCameraControl> foundRemoteCamera;
+
+    [_services enumerateKeysAndObjectsUsingBlock:^(id key, id service, BOOL *stop)
+    {
+        if (![service respondsToSelector:@selector(remoteCameraControl)])
+            return;
+
+        id<RemoteCameraControl> remoteCamera = [service remoteCameraControl];
+
+        if (remoteCamera)
+        {
+            if (foundRemoteCamera)
+            {
+                if (remoteCamera.remoteCameraControlPriority > foundRemoteCamera.remoteCameraControlPriority)
+                {
+                    foundRemoteCamera = remoteCamera;
+                }
+            } else
+            {
+                foundRemoteCamera = remoteCamera;
+            }
+        }
+    }];
+
+    return foundRemoteCamera;
 }
 
 @end

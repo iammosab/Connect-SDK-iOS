@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name         = "ConnectSDK"
-  s.version      = "1.6.2"
+  s.version      = "2.0.0"
   s.summary      = "Connect SDK is an open source framework that connects your mobile apps with multiple TV platforms."
 
   s.description  = <<-DESC
@@ -29,8 +29,8 @@ Pod::Spec.new do |s|
   s.license      = { :type => "Apache License, Version 2.0", :file => "LICENSE" }
   s.author             = { "Connect SDK" => "support@connectsdk.com" }
   s.social_media_url   = "http://twitter.com/ConnectSDK"
-  s.platform     = :ios, "7.1"
-  s.ios.deployment_target = "7.1"
+  s.platform     = :ios, "11.0"
+  s.ios.deployment_target = "11.0"
   s.source       = { :git => "https://github.com/ConnectSDK/Connect-SDK-iOS.git",
                      :tag => s.version,
                      :submodules => true }
@@ -89,11 +89,13 @@ Pod::Spec.new do |s|
 
   s.subspec 'Core' do |sp|
     sp.source_files  = "ConnectSDKDefaultPlatforms.h", "core/**/*.{h,m}"
-    sp.exclude_files = (non_arc_files.dup << "core/ConnectSDK*Tests/**/*")
+    sp.exclude_files = (non_arc_files.dup << "core/ConnectSDK*Tests/**/*" << "core/Frameworks/LGCast/**/*.h")
     sp.private_header_files = "core/**/*_Private.h"
     sp.requires_arc = true
 
     sp.dependency 'ConnectSDK/no-arc'
+    sp.ios.vendored_frameworks = 'core/Frameworks/LGCast/LGCast.xcframework', 'core/Frameworks/LGCast/GStreamerForLGCast.xcframework'
+    sp.preserve_paths =  'core/Frameworks/LGCast/LGCast.xcframework', 'core/Frameworks/LGCast/GStreamerForLGCast.xcframework'
   end
 
   s.subspec 'no-arc' do |sp|
@@ -105,6 +107,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'GoogleCast' do |sp|
     cast_dir = "modules/google-cast"
+
     sp.dependency 'ConnectSDK/Core'
     sp.source_files = "#{cast_dir}/**/*.{h,m}"
     sp.exclude_files = "#{cast_dir}/*Tests/**/*"
