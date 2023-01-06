@@ -463,10 +463,35 @@
             dispatch_on_main(^{ [self.delegate connectableDevice:self service:service pairingRequiredOfType:pairingType withData:pairingData]; });
         else
         {
-            if (pairingType == DeviceServicePairingTypeAirPlayMirroring)
+            if (pairingType == DeviceServicePairingTypeAirPlayMirroring && [pairingData isKindOfClass:UIAlertView.class])
                 [(UIAlertView *)pairingData show];
+            
+            if (pairingType == DeviceServicePairingTypeAirPlayMirroring && [pairingData isKindOfClass:UIAlertController.class]){
+//                [(UIAlertController *)pairingData show];
+                [self.topViewController presentViewController:(UIAlertController *)pairingData animated:YES completion:nil];
+
+            }
         }
     }
+}
+
+- (UIViewController *) topViewController {
+   UIViewController *baseVC = UIApplication.sharedApplication.keyWindow.rootViewController;
+   if ([baseVC isKindOfClass:[UINavigationController class]]) {
+       return ((UINavigationController *)baseVC).visibleViewController;
+   }
+
+   if ([baseVC isKindOfClass:[UITabBarController class]]) {
+       UIViewController *selectedTVC = ((UITabBarController*)baseVC).selectedViewController;
+       if (selectedTVC) {
+           return selectedTVC;
+       }
+   }
+
+   if (baseVC.presentedViewController) {
+       return baseVC.presentedViewController;
+   }
+   return baseVC;
 }
 
 - (void)deviceServicePairingSuccess:(DeviceService *)service

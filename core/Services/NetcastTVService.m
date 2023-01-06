@@ -55,6 +55,8 @@ typedef enum {
 
     // TODO: pull pairing timer from WebOSTVService
     UIAlertView *_pairingAlert;
+    UIAlertController *_pairingAlertC;
+
 
     NSMutableDictionary *_subscribed;
     NSURL *_commandURL;
@@ -352,9 +354,51 @@ NSString *lgeUDAPRequestURI[8] = {
     NSString *ok = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Pair_OK" value:@"OK" table:@"ConnectSDK"];
     NSString *cancel = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Pair_Cancel" value:@"Cancel" table:@"ConnectSDK"];
 
-    _pairingAlert = [[UIAlertView alloc] initWithTitle:title message:message delegate:self cancelButtonTitle:cancel otherButtonTitles:ok, nil];
-    _pairingAlert.alertViewStyle = UIAlertViewStylePlainTextInput;
-    [_pairingAlert show];
+    // _pairingAlert = [[UIAlertView alloc] initWithTitle:title message:message delegate:self cancelButtonTitle:cancel otherButtonTitles:ok, nil];
+    // _pairingAlert.alertViewStyle = UIAlertViewStylePlainTextInput;
+    // [_pairingAlert show];
+
+        _pairingAlertC = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    
+
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:ok style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                            //button click event
+        if((self.pairingType == DeviceServicePairingTypePinCode || self.pairingType == DeviceServicePairingTypeMixed)){
+            NSString *pairingCode = self->_pairingAlertC.textFields[0].text;
+            [self pairWithData:pairingCode];
+        }
+                        }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancel style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        //button click event
+        [self dismissPairingWithSuccess:nil failure:nil];
+
+    }];
+    [_pairingAlertC addAction:cancelAction];
+    [_pairingAlertC addAction:okAction];
+    
+    dispatch_on_main(^{
+        [self.topViewController presentViewController:self->_pairingAlertC animated:YES completion:nil];
+    });
+
+}
+
+- (UIViewController *) topViewController {
+   UIViewController *baseVC = UIApplication.sharedApplication.keyWindow.rootViewController;
+   if ([baseVC isKindOfClass:[UINavigationController class]]) {
+       return ((UINavigationController *)baseVC).visibleViewController;
+   }
+
+   if ([baseVC isKindOfClass:[UITabBarController class]]) {
+       UIViewController *selectedTVC = ((UITabBarController*)baseVC).selectedViewController;
+       if (selectedTVC) {
+           return selectedTVC;
+       }
+   }
+
+   if (baseVC.presentedViewController) {
+       return baseVC.presentedViewController;
+   }
+   return baseVC;
 }
 
 - (void)willPresentAlertView:(UIAlertView *)alertView
